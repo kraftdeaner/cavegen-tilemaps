@@ -1,0 +1,16 @@
+[gd_scene load_steps=5 format=3 uid="uid://dlyx4vd5ixyfi"]
+
+[ext_resource type="Script" uid="uid://b18jktcu7yr3k" path="res://chunk.gd" id="1_eat54"]
+[ext_resource type="PackedScene" uid="uid://dnx0ui56wx3qr" path="res://terrain_tile.tscn" id="1_kdh3y"]
+
+[sub_resource type="TileSetScenesCollectionSource" id="TileSetScenesCollectionSource_kdh3y"]
+scenes/1/scene = ExtResource("1_kdh3y")
+
+[sub_resource type="TileSet" id="TileSet_eat54"]
+sources/0 = SubResource("TileSetScenesCollectionSource_kdh3y")
+
+[node name="Chunk" type="Node2D"]
+script = ExtResource("1_eat54")
+
+[node name="TileMap" type="TileMapLayer" parent="."]
+tile_set = SubResource("TileSet_eat54")
