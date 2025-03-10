@@ -9,7 +9,7 @@ var noise : Noise
 const chunk_tiles : int = 16
 
 # chunks in a map
-var map_chunks : int = 5
+var map_chunks : int = 2
 
 var map_size = chunk_tiles * map_chunks
 var width : int = map_size
@@ -22,6 +22,7 @@ func _ready() -> void:
 	cmap_layer.tile_set.tile_size = Vector2i(256, 256)
 	#cmap_layer.position = Vector2i.ZERO
 	noise = noise_texture.noise
+	generate_map()
 	generate_world()
 
 
@@ -36,8 +37,10 @@ func _input(event: InputEvent) -> void:
 		#await get_tree().process_frame
 		#var bar = foo.get_child(0)
 		#print(bar)
-		cmap_layer.erase_cell(tpos)
+		#cmap_layer.erase_cell(tpos)
 		#cmap_layer.clear()
+
+
 
 
 func generate_world():
@@ -54,6 +57,15 @@ func generate_world():
 					# The assigned PackedScene.
 					var scene = scene_source.get_scene_tile_scene(alt_id)
 
+func _draw() -> void:
+	for x in range(width):
+		for y in range(height):
+			var index = x * height + y
+			if noise_val_arr[index] >= 0:
+				draw_circle(Vector2(x * 16, y * 16), 3, Color.FIREBRICK)
+			else:
+				draw_circle(Vector2(x * 16, y * 16), 3, Color.BLUE)
+	
 
 func get_tile_instance_at(x, y):
 	var tile_pos = Vector2i(x, y)
@@ -70,9 +82,10 @@ func generate_map():
 		for y in range(height):
 			var noise_val = noise.get_noise_2d(x, y)
 			noise_val_arr.append(noise_val)
-
 	# Wait a frame to ensure TileMap processed the changes
 	await get_tree().process_frame 
+	
+	Events.map_drawn.emit(noise_val_arr, chunk_tiles, map_size)
 	
 	# Now modify the instantiated scenes
 	

@@ -14,7 +14,7 @@ func _ready() -> void:
 	for x in range(size.x):
 		for y in range(size.y):
 			tmap.set_cell(Vector2i(x, y), 0, Vector2i(0, 0), 1)
-
+	
 
 func _draw() -> void:
 	var qs = tmap.rendering_quadrant_size + 1
@@ -28,5 +28,3 @@ func _draw() -> void:
 			## Place the tile, which auto-instantiates the scene
 			#tmap.set_cell(Vector2i(x, y), 0, Vector2i(0, 0), 1)
 #
-	## Now modify the instantiated scenes
-	#

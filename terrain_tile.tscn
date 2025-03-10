@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://bgotfeqnq8br3" path="res://terrain_tile.gd" id="1_14ndr"]
 
 [sub_resource type="QuadMesh" id="QuadMesh_14ndr"]
-size = Vector2(10, 10)
+size = Vector2(14.4, 14.4)
 
 [node name="TerrainTile" type="Node2D"]
 script = ExtResource("1_14ndr")

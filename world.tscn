@@ -26,8 +26,8 @@ tile_set = SubResource("TileSet_tlwt5")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 anchor_mode = 0
-zoom = Vector2(0.5, 0.5)
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+visible = false
 position = Vector2(330, 307)
 texture = ExtResource("3_tlwt5")
