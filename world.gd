@@ -22,6 +22,7 @@ func _ready() -> void:
 	cmap_layer.tile_set.tile_size = Vector2i(256, 256)
 	#cmap_layer.position = Vector2i.ZERO
 	noise = noise_texture.noise
+	noise.seed = randi()
 	generate_map()
 	generate_world()
 

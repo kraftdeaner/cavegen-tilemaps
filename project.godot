@@ -21,8 +21,8 @@ Events="*res://globals/events.gd"
 
 [display]
 
-window/size/viewport_width=640
-window/size/viewport_height=640
+window/size/viewport_width=512
+window/size/viewport_height=512
 
 [input]
 
