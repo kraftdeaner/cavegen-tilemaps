@@ -13,11 +13,16 @@ config_version=5
 config/name="cavegen_tmap_deferredtest"
 run/main_scene="uid://cb72iup2gxg2a"
 config/features=PackedStringArray("4.4", "Forward Plus")
+run/max_fps=120
 config/icon="res://icon.svg"
 
 [autoload]
 
 Events="*res://globals/events.gd"
+
+[debug]
+
+settings/stdout/print_fps=true
 
 [display]
 

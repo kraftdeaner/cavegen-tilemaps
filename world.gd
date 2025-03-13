@@ -15,7 +15,7 @@ var noise : Noise
 const chunk_tiles : int = 16
 
 # chunks in a map
-var map_chunks : int = 16
+var map_chunks : int = 32
 
 var map_size = chunk_tiles * map_chunks
 var width : int = map_size
@@ -25,13 +25,14 @@ var noise_val_arr = []
 
 
 func _ready() -> void:
+	
 	Events.refresh_seed_button_pressed.connect(reset_world)
 	# set chunk map's tile (chunk) size in pixels
 	cmap_layer.tile_set.tile_size = Vector2i(256, 256)
 	#cmap_layer.position = Vector2i.ZERO
 	noise = noise_texture.noise
 	noise.seed = randi()
-	generate_world()
+	update_chunks()
 	add_chunk_timer()
 
 
@@ -73,21 +74,27 @@ func generate_world():
 
 func update_chunks():
 	var player_chunk = get_player_chunk()
-	var chunks_to_keep = []
+	#var chunks_keep = []
+	var chunks_keep = get_chunks_within_distance(player_chunk,chunk_render_dist)
 	
 	generate_map()
 	
-	for i in range(map_chunks):
-		for j in range(map_chunks):
-			var chunk_pos = Vector2i(i, j)
-			var dist = chunk_pos.distance_to(player_chunk)
-			
-			if dist <= chunk_render_dist:
-				if cmap_layer.get_cell_source_id(chunk_pos) == -1:
-					cmap_layer.set_cell(chunk_pos, 2, Vector2i(0,0), 1)
-				chunks_to_keep.append(chunk_pos)
+	for chunk_pos in chunks_keep:
+		if cmap_layer.get_cell_source_id(chunk_pos) == -1:
+			cmap_layer.set_cell(chunk_pos, 2, Vector2i(0,0), 1)
+	
+	#for i in range(map_chunks):
+		#for j in range(map_chunks):
+			#var chunk_pos = Vector2i(i, j)
+			#var dist = chunk_pos.distance_to(player_chunk)
+			#
+			#if dist <= chunk_render_dist:
+				#if cmap_layer.get_cell_source_id(chunk_pos) == -1:
+					#cmap_layer.set_cell(chunk_pos, 2, Vector2i(0,0), 1)
+				#chunks_keep.append(chunk_pos)
+	
 	for chunk in cmap_layer.get_used_cells():
-		if chunk not in chunks_to_keep:
+		if chunk not in chunks_keep:
 			cmap_layer.erase_cell(chunk)
 
 
@@ -95,6 +102,21 @@ func get_player_chunk() -> Vector2i:
 	return cmap_layer.local_to_map(player.global_position)
 
 
+func get_chunks_within_distance(start_chunk, max_distance) -> Array:
+	var visited_chunks = {}
+	var queue = [start_chunk]
+	visited_chunks[start_chunk] = true
+	
+	for i in range(max_distance):
+		var next_queue = []
+		for chunk in queue:
+			for neighbor in cmap_layer.get_surrounding_cells(chunk):
+				if neighbor not in visited_chunks:
+					visited_chunks[neighbor] = true
+					next_queue.append(neighbor)
+		queue = next_queue
+	
+	return visited_chunks.keys()
 
 
 func add_chunk_timer():
@@ -115,14 +137,14 @@ func reset_world():
 	queue_redraw()
 
 
-func _draw() -> void:
-	for x in range(width):
-		for y in range(height):
-			var index = x * height + y
-			if noise_val_arr[index] >= 0:
-				draw_circle(Vector2(x * 16, y * 16), 3, Color.FIREBRICK)
-			else:
-				draw_circle(Vector2(x * 16, y * 16), 3, Color.BLUE)
+#func _draw() -> void:
+	#for x in range(width):
+		#for y in range(height):
+			#var index = x * height + y
+			#if noise_val_arr[index] >= 0:
+				#draw_circle(Vector2(x * 16, y * 16), 3, Color.FIREBRICK)
+			#else:
+				#draw_circle(Vector2(x * 16, y * 16), 3, Color.BLUE)
 
 
 func get_tile_instance_at(x, y):
