@@ -15,6 +15,7 @@ frequency = 0.0241
 fractal_type = 3
 
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_gbfbk"]
+normalize = false
 noise = SubResource("FastNoiseLite_pkg7o")
 
 [sub_resource type="TileSetScenesCollectionSource" id="TileSetScenesCollectionSource_f3sb7"]
@@ -51,10 +52,6 @@ noise_texture = SubResource("NoiseTexture2D_gbfbk")
 [node name="ChunkMap" type="TileMapLayer" parent="."]
 position = Vector2(-128, -128)
 tile_set = SubResource("TileSet_tlwt5")
-
-[node name="Camera2D" type="Camera2D" parent="."]
-anchor_mode = 0
-zoom = Vector2(0.5, 0.5)
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 visible = false

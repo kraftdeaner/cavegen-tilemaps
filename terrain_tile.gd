@@ -46,6 +46,6 @@ func _on_map_drawn(map, chunk_tiles, map_size):
 	# Ensure within bounds
 	if index >= 0 and index < map.size():
 		noise_val = map[index]
-	scalar = 1 if noise_val >= threshold else 0
+	scalar = 0 if noise_val >= threshold else 1
 	color_tile(scalar, scalar, scalar)
 	tcol.disabled = scalar

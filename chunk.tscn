@@ -14,3 +14,5 @@ script = ExtResource("1_eat54")
 
 [node name="TileMap" type="TileMapLayer" parent="."]
 tile_set = SubResource("TileSet_eat54")
+
+[node name="Area2D" type="Area2D" parent="."]

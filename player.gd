@@ -1,4 +1,5 @@
 extends CharacterBody2D
+@onready var camera_2d: Camera2D = $Camera2D
 
 
 const SPEED = 300.0
