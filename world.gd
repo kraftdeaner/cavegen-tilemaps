@@ -2,6 +2,7 @@ extends Node2D
 
 @export var noise_texture : NoiseTexture2D
 @onready var cmap_layer: TileMapLayer = $ChunkMap
+@onready var player: CharacterBody2D = $Player
 
 var noise : Noise
 
@@ -9,7 +10,7 @@ var noise : Noise
 const chunk_tiles : int = 16
 
 # chunks in a map
-var map_chunks : int = 2
+var map_chunks : int = 4
 
 var map_size = chunk_tiles * map_chunks
 var width : int = map_size
@@ -18,35 +19,37 @@ var height : int = map_size
 var noise_val_arr = []
 
 func _ready() -> void:
+	Events.refresh_seed_button_pressed.connect(reset_world)
 	# set chunk map's tile (chunk) size in pixels
 	cmap_layer.tile_set.tile_size = Vector2i(256, 256)
 	#cmap_layer.position = Vector2i.ZERO
 	noise = noise_texture.noise
+	
 	noise.seed = randi()
-	generate_map()
 	generate_world()
 
 
 func _input(event: InputEvent) -> void:
 	if Input.is_action_just_pressed("click"):
+		print("Event position: ", event.position) # pos in screen (respects cam)
 		var mpos = get_global_mouse_position()
-		print(mpos)
-		print(event.position)
-		var tpos = cmap_layer.local_to_map(mpos)
-		print(tpos)
-		#var foo = get_tile_instance_at(tpos.x, tpos.y)
-		#await get_tree().process_frame
-		#var bar = foo.get_child(0)
-		#print(bar)
-		#cmap_layer.erase_cell(tpos)
-		#cmap_layer.clear()
-
-
-
+		print("Global mouse position: ", mpos) # pos in world (chunkmap's mom) 
+		var cpos = cmap_layer.local_to_map(mpos)
+		print("Chunk position: ", cpos) # chunk coordinates in chunkmap
+		var tpos: Vector2i = floor(mpos / 16)
+		print("Tile position: ", tpos)
+		if cmap_layer.get_cell_source_id(cpos) == -1:
+			generate_map()
+			cmap_layer.set_cell(cpos, 2, Vector2i(0, 0), 1)
+		else:
+			cmap_layer.erase_cell(cpos)
+		player.global_position = mpos
 
 func generate_world():
+	generate_map()
 	for x in range(map_chunks):
 		for y in range(map_chunks):
+			
 			# Place the tile, which auto-instantiates the scene
 			cmap_layer.set_cell(Vector2i(x , y), 2, Vector2i(0, 0), 1)
 			
@@ -57,6 +60,15 @@ func generate_world():
 					var alt_id = cmap_layer.get_cell_alternative_tile(Vector2i(x, y))
 					# The assigned PackedScene.
 					var scene = scene_source.get_scene_tile_scene(alt_id)
+
+
+func reset_world():
+	noise_val_arr = []
+	cmap_layer.clear()
+	noise.seed = randi()
+	generate_world()
+	queue_redraw()
+
 
 func _draw() -> void:
 	for x in range(width):
@@ -85,9 +97,13 @@ func generate_map():
 			noise_val_arr.append(noise_val)
 	# Wait a frame to ensure TileMap processed the changes
 	await get_tree().process_frame 
-	
 	Events.map_drawn.emit(noise_val_arr, chunk_tiles, map_size)
+	
 	
 	# Now modify the instantiated scenes
 	
 	
+
+
+func _on_chunk_map_changed() -> void:
+	print("changed!")

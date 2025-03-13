@@ -1,14 +1,21 @@
-[gd_scene load_steps=8 format=3 uid="uid://cb72iup2gxg2a"]
+[gd_scene load_steps=17 format=3 uid="uid://cb72iup2gxg2a"]
 
 [ext_resource type="Script" uid="uid://nr65ww3h7kxd" path="res://world.gd" id="1_fj7yv"]
 [ext_resource type="PackedScene" uid="uid://dlyx4vd5ixyfi" path="res://chunk.tscn" id="2_fj7yv"]
 [ext_resource type="Texture2D" uid="uid://bjka5igil0i7u" path="res://icon.svg" id="3_tlwt5"]
+[ext_resource type="Script" uid="uid://d2vhrxkol5b1o" path="res://ui_control.gd" id="4_aqk2v"]
+[ext_resource type="StyleBox" uid="uid://bwxelkakcxofx" path="res://button_stylebox_normal.tres" id="5_036b0"]
+[ext_resource type="StyleBox" uid="uid://bypxm64ad8ui3" path="res://button_stylebox_hover.tres" id="5_dwbse"]
+[ext_resource type="PackedScene" uid="uid://c5qvr43lvq5os" path="res://player.tscn" id="7_pkg7o"]
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_tlwt5"]
-frequency = 0.0365
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_pkg7o"]
+noise_type = 3
+seed = 115
+frequency = 0.0241
+fractal_type = 3
 
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_aqk2v"]
-noise = SubResource("FastNoiseLite_tlwt5")
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_gbfbk"]
+noise = SubResource("FastNoiseLite_pkg7o")
 
 [sub_resource type="TileSetScenesCollectionSource" id="TileSetScenesCollectionSource_f3sb7"]
 scenes/1/scene = ExtResource("2_fj7yv")
@@ -16,9 +23,30 @@ scenes/1/scene = ExtResource("2_fj7yv")
 [sub_resource type="TileSet" id="TileSet_tlwt5"]
 sources/2 = SubResource("TileSetScenesCollectionSource_f3sb7")
 
+[sub_resource type="Gradient" id="Gradient_dwbse"]
+offsets = PackedFloat32Array(0.644689)
+colors = PackedColorArray(0.822672, 0.95165, 0.956897, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_pkg7o"]
+gradient = SubResource("Gradient_dwbse")
+width = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gbfbk"]
+bg_color = Color(0.337997, 0.658094, 0.691699, 1)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_dwbse"]
+noise_type = 3
+frequency = 0.0415
+offset = Vector3(32.95, 0, 0)
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_pkg7o"]
+width = 32
+height = 32
+noise = SubResource("FastNoiseLite_dwbse")
+
 [node name="World" type="Node2D"]
 script = ExtResource("1_fj7yv")
-noise_texture = SubResource("NoiseTexture2D_aqk2v")
+noise_texture = SubResource("NoiseTexture2D_gbfbk")
 
 [node name="ChunkMap" type="TileMapLayer" parent="."]
 position = Vector2(-128, -128)
@@ -26,8 +54,48 @@ tile_set = SubResource("TileSet_tlwt5")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 anchor_mode = 0
+zoom = Vector2(0.5, 0.5)
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 visible = false
 position = Vector2(330, 307)
 texture = ExtResource("3_tlwt5")
+
+[node name="UIControl" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("4_aqk2v")
+
+[node name="TileScale" type="VSlider" parent="UIControl"]
+custom_minimum_size = Vector2(32, 128)
+layout_mode = 0
+offset_left = 32.0
+offset_top = 32.0
+offset_right = 48.0
+offset_bottom = 96.0
+theme_override_icons/grabber = SubResource("GradientTexture1D_pkg7o")
+theme_override_styles/grabber_area = SubResource("StyleBoxFlat_gbfbk")
+min_value = 2.0
+max_value = 16.0
+step = 0.2
+value = 8.0
+
+[node name="RefreshSeed" type="Button" parent="UIControl"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 0
+offset_left = 64.0
+offset_top = 32.0
+offset_right = 96.0
+offset_bottom = 64.0
+theme_override_styles/hover = ExtResource("5_dwbse")
+theme_override_styles/normal = ExtResource("5_036b0")
+icon = SubResource("NoiseTexture2D_pkg7o")
+icon_alignment = 1
+
+[node name="Player" parent="." instance=ExtResource("7_pkg7o")]
+
+[connection signal="changed" from="ChunkMap" to="." method="_on_chunk_map_changed"]
+[connection signal="value_changed" from="UIControl/TileScale" to="UIControl" method="_on_tile_scale_value_changed"]
+[connection signal="pressed" from="UIControl/RefreshSeed" to="UIControl" method="_on_refresh_seed_pressed"]
