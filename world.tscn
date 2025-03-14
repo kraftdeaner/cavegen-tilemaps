@@ -1,22 +1,13 @@
-[gd_scene load_steps=17 format=3 uid="uid://cb72iup2gxg2a"]
+[gd_scene load_steps=16 format=3 uid="uid://cb72iup2gxg2a"]
 
 [ext_resource type="Script" uid="uid://nr65ww3h7kxd" path="res://world.gd" id="1_fj7yv"]
 [ext_resource type="PackedScene" uid="uid://dlyx4vd5ixyfi" path="res://chunk.tscn" id="2_fj7yv"]
+[ext_resource type="Texture2D" uid="uid://d2oe0d4l4qx7l" path="res://MapNoiseTexture.tres" id="2_gbfbk"]
 [ext_resource type="Texture2D" uid="uid://bjka5igil0i7u" path="res://icon.svg" id="3_tlwt5"]
 [ext_resource type="Script" uid="uid://d2vhrxkol5b1o" path="res://ui_control.gd" id="4_aqk2v"]
 [ext_resource type="StyleBox" uid="uid://bwxelkakcxofx" path="res://button_stylebox_normal.tres" id="5_036b0"]
 [ext_resource type="StyleBox" uid="uid://bypxm64ad8ui3" path="res://button_stylebox_hover.tres" id="5_dwbse"]
 [ext_resource type="PackedScene" uid="uid://c5qvr43lvq5os" path="res://player.tscn" id="7_pkg7o"]
-
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_pkg7o"]
-noise_type = 3
-seed = 115
-frequency = 0.0241
-fractal_type = 3
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_gbfbk"]
-normalize = false
-noise = SubResource("FastNoiseLite_pkg7o")
 
 [sub_resource type="TileSetScenesCollectionSource" id="TileSetScenesCollectionSource_f3sb7"]
 scenes/1/scene = ExtResource("2_fj7yv")
@@ -47,7 +38,7 @@ noise = SubResource("FastNoiseLite_dwbse")
 
 [node name="World" type="Node2D"]
 script = ExtResource("1_fj7yv")
-noise_texture = SubResource("NoiseTexture2D_gbfbk")
+noise_texture = ExtResource("2_gbfbk")
 
 [node name="ChunkMap" type="TileMapLayer" parent="."]
 position = Vector2(-128, -128)

@@ -15,14 +15,14 @@ var noise : Noise
 const chunk_tiles : int = 16
 
 # chunks in a map
-var map_chunks : int = 16
+var map_chunks : int = 32
 
 var map_size = chunk_tiles * map_chunks
 var width : int = map_size
 var height : int = map_size
 
 var noise_val_arr = []
-
+var noise_map = {}
 
 func _ready() -> void:
 	
@@ -40,13 +40,14 @@ func _input(event: InputEvent) -> void:
 	var mpos = get_global_mouse_position()
 	if Input.is_action_just_pressed("click"):
 		print("Event position: ", event.position) # pos in screen (respects cam)
+		
 		print("Global mouse position: ", mpos) # pos in world (chunkmap's mom) 
 		var cpos = cmap_layer.local_to_map(mpos)
 		print("Chunk position: ", cpos) # chunk coordinates in chunkmap
 		var tpos: Vector2i = floor(mpos / 16)
 		print("Tile position: ", tpos)
 		if cmap_layer.get_cell_source_id(cpos) == -1:
-			generate_map()
+			
 			cmap_layer.set_cell(cpos, 2, Vector2i(0, 0), 1)
 		else:
 			cmap_layer.erase_cell(cpos)
@@ -56,7 +57,7 @@ func _input(event: InputEvent) -> void:
 
 
 func generate_world():
-	generate_map()
+	#generate_map()
 	for x in range(map_chunks):
 		for y in range(map_chunks):
 			
@@ -74,28 +75,28 @@ func generate_world():
 
 func update_chunks():
 	var player_chunk = get_player_chunk()
-	#var chunks_keep = []
-	var chunks_keep = get_chunks_within_distance(player_chunk,chunk_render_dist)
-	
-	generate_map()
-	
-	for chunk_pos in chunks_keep:
-		if cmap_layer.get_cell_source_id(chunk_pos) == -1:
-			cmap_layer.set_cell(chunk_pos, 2, Vector2i(0,0), 1)
-	
-	#for i in range(map_chunks):
-		#for j in range(map_chunks):
-			#var chunk_pos = Vector2i(i, j)
-			#var dist = chunk_pos.distance_to(player_chunk)
-			#
-			#if dist <= chunk_render_dist:
-				#if cmap_layer.get_cell_source_id(chunk_pos) == -1:
-					#cmap_layer.set_cell(chunk_pos, 2, Vector2i(0,0), 1)
-				#chunks_keep.append(chunk_pos)
-	
-	for chunk in cmap_layer.get_used_cells():
+	var chunks_keep = get_chunks_within_distance(player_chunk, chunk_render_dist)
+
+	generate_map_for_chunks(chunks_keep)  # ✅ Update only relevant chunks
+
+	var existing_chunks = cmap_layer.get_used_cells()
+	var to_remove = []
+
+	for chunk in existing_chunks:
 		if chunk not in chunks_keep:
-			cmap_layer.erase_cell(chunk)
+			to_remove.append(chunk)
+
+	for chunk in to_remove:
+		cmap_layer.erase_cell(chunk)  # Remove unused chunks
+
+func process_chunks_in_batches(to_add, to_remove):
+	var batch_size = 10  # Adjust based on performance
+	while to_add.size() > 0 or to_remove.size() > 0:
+		for i in range(min(batch_size, to_add.size())):
+			cmap_layer.set_cell(to_add.pop_front(), 2, Vector2i(0,0), 1)
+		for i in range(min(batch_size, to_remove.size())):
+			cmap_layer.erase_cell(to_remove.pop_front())
+		await get_tree().process_frame  # Yield to avoid freezing the main thread
 
 
 func get_player_chunk() -> Vector2i:
@@ -133,7 +134,7 @@ func reset_world():
 	noise_val_arr = []
 	cmap_layer.clear()
 	noise.seed = randi()
-	generate_world()
+	update_chunks()
 	queue_redraw()
 
 
@@ -156,16 +157,23 @@ func get_tile_instance_at(x, y):
 	return null
 
 
-func generate_map():
-	#noise.seed = randi()
-	for x in range(width):
-		for y in range(height):
-			var noise_val = noise.get_noise_2d(x, y)
-			noise_val_arr.append(noise_val)
-	# Wait a frame to ensure TileMap processed the changes
-	await get_tree().process_frame 
-	Events.map_drawn.emit(noise_val_arr, chunk_tiles, map_size)
-	# modify instantiated scenes here?
-	
+
+
+func generate_map_for_chunks(chunks_keep):
+	for chunk in chunks_keep:
+		var chunk_x = chunk.x * chunk_tiles
+		var chunk_y = chunk.y * chunk_tiles
+		var chunk_noise = []  # Store chunk-specific noise values
+		
+		for x in range(chunk_x, chunk_x + chunk_tiles):
+			for y in range(chunk_y, chunk_y + chunk_tiles):
+				chunk_noise.append(noise.get_noise_2d(x, y))
+
+		noise_map[chunk] = chunk_noise  # Store in dictionary
+
+	await get_tree().process_frame  # Prevent freezing
+	Events.map_drawn.emit(noise_map, chunk_tiles, map_size)
+
+
 func _on_chunk_map_changed() -> void:
 	print("changed!")
